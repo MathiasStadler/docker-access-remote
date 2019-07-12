@@ -1,5 +1,4 @@
-# docker-access-remote
-remote access to docker deamon
+# docker-access-remote remote access to docker daemon
 
 ## create script from readme.md
 
@@ -40,7 +39,7 @@ SERVICE="docker.service";
 SERVICE_FILE="$(systemctl show -p FragmentPath ${SERVICE}|sed 's/.*=//')";
 # create backup
 sudo cp "${SERVICE_FILE}" "${SERVICE_FILE}.backup"
-# delete all commnet ExecStart line from previous config loop
+# delete all comment ExecStart line from previous config loop
 sudo sed -i '/^#ExecStart.*$/ d' "${SERVICE_FILE}"
 # comment available ExecStart (all match)
 sudo sed -i '/^ExecStart/ s/^#*/#/g' "${SERVICE_FILE}"
@@ -68,13 +67,13 @@ if [ $? -ne 0 ]
     fi
 ```
 
-## tls remote access to docker deamon
+## tls remote access to docker daemon
 
-- from https://docs.docker.com/engine/security/https/ 
+- from https://docs.docker.com/engine/security/https/
 
-```bash tls-enable-acccess.sh
+```bash tls-enable-access.sh
 #!/bin/bash
-set -o erexit -o posix
+set -o errexit -o posix
 # create passphrase text file
 echo "topSecret" >passphrase.txt
 # create generate CA private
@@ -121,7 +120,7 @@ SERVICE="docker.service";
 SERVICE_FILE="$(systemctl show -p FragmentPath ${SERVICE}|sed 's/.*=//')";
 # create backup
 sudo cp "${SERVICE_FILE}" "${SERVICE_FILE}.backup"
-# delete all commnet ExecStart line from previous config loop
+# delete all comment ExecStart line from previous config loop
 sudo sed -i '/^#ExecStart.*$/ d' "${SERVICE_FILE}"
 # comment available ExecStart (all match)
 sudo sed -i '/^ExecStart/ s/^#*/#/g' "${SERVICE_FILE}"
