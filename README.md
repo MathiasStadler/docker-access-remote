@@ -54,9 +54,16 @@ sudo systemctl restart docker.service
 
 ## test-remote-access.sh
 
-```bash
+```bash test-remote-access.sh
+#!/bin/bash
+# flag
+set -o posix -o errexit
 # determine local ip
 ip="$(ip route get 1 | sed 's/^.*src \([^ ]*\).*$/\1/;q')";
 alias dockerx="docker -H="\${ip}":2376"
-
+dockerx info
+if [ $? -ne 0 ]
+   then
+      echo "Error can't connect remote docker"
+    fi
 ```
