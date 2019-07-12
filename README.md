@@ -54,7 +54,9 @@ sudo systemctl restart docker.service
 
 ## test-remote-access.sh
 
-``'bash
-
+```bash
+# determine local ip
+ip="$(ip route get 1 | sed 's/^.*src \([^ ]*\).*$/\1/;q')";
+alias dockerx="docker -H="\${ip}":2376"
 
 ```
