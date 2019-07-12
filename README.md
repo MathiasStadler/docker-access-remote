@@ -126,8 +126,9 @@ chmod -v 0444 docker-ca.pem docker-server-cert.pem docker-cert.pem
 cp -v docker-ca-key.pem docker-key.pem docker-server-key.pem docker-ca.pem docker-server-cert.pem docker-cert.pem /etc/ssl
 
 # server side
-dockerd --tlsverify --tlscacert=docker-ca.pem --tlscert=docker-server-cert.pem --tlskey=docker-server-key.pem \
-  -H=0.0.0.0:2376
+dockerd --tlsverify --tlscacert=/etc/ssl/docker-ca.pem --tlscert=/etc/ssl/docker-server-cert.pem --tlskey=/etc/ssl/docker-server-key.pem -H=0.0.0.0:2376
+
+# modify config
 
 
 
