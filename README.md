@@ -19,11 +19,11 @@ SCRIPT_PATH="work_folder/\${SCRIPT}"
 # printf "SCRIPT => %s \n" "\${SCRIPT}"
 expr="/^\\\`\\\`\\\`bash \${SCRIPT}/,/^\\\`\\\`\\\`/{ /^\\\`\\\`\\\`bash.*$/d; /^\\\`\\\`\\\`$/d; p; }"
 # printf "Expression %s \n" "\${expr}"
-if [-f "\${1}"]; then printf "File exists please delete first \n";exit 1;fi;
+if [ -f "\${1}" ]; then printf "File exists please delete first \n";exit 1;fi;
 sed -n "\${expr}" "\${2}" >"\${1}"
 chmod +x "\${1}"
 EOF
-chmod +x ${SCRI"\${1}"PT_NAME}
+chmod +x ${SCRIPT_NAME}
 ```
 
 ## enable remote access
