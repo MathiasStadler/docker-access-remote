@@ -26,6 +26,10 @@ EOF
 chmod +x ${SCRI"\${1}"PT_NAME}
 ```
 
+## enable remote access
+
+- from https://success.docker.com/article/how-do-i-enable-the-remote-api-for-dockerd
+
 ```bash enable-remote-access.sh
 #!/bin/bash
 #set flag
@@ -42,5 +46,15 @@ sudo sed -i '/^#ExecStart.*$/ d' "${SERVICE_FILE}"
 sudo sed -i '/^ExecStart/ s/^#*/#/g' "${SERVICE_FILE}"
 # add remote network setting
 sudo sed -i '/^#ExecStart/a ExecStart=/usr/bin/dockerd -H fd:// -H 0.0.0.0:2376' "${SERVICE_FILE}"
+# Reload the unit files
+sudo systemctl daemon-reload
+# restart
+sudo systemctl restart docker.service
 ```
 
+## test-remote-access.sh
+
+``'bash
+
+
+```
