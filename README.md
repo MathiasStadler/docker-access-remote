@@ -29,6 +29,14 @@ chmod +x ${SCRIPT_NAME}
 
 - from https://success.docker.com/article/how-do-i-enable-the-remote-api-for-dockerd
 
+- create script
+
+```bash
+rm -rf enable-remote-access.sh
+./readme2script.sh enable-remote-access.sh README.md
+./enable-remote-access.sh
+```
+
 ```bash enable-remote-access.sh
 #!/bin/bash
 #set flag
@@ -52,6 +60,14 @@ sudo systemctl restart docker.service
 ```
 
 ## test-remote-access.sh
+
+- create script
+
+```bash
+rm -rf test-remote-access.sh
+./readme2script.sh test-remote-access.sh README.md
+./test-remote-access.sh
+```
 
 ```bash test-remote-access.sh
 #!/bin/bash
