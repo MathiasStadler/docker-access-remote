@@ -71,6 +71,18 @@ if [ $? -ne 0 ]
 
 - from https://docs.docker.com/engine/security/https/
 
+- create script
+
+```bash
+# create script
+rm -rf tls-enable-access.sh
+./readme2script.sh tls-enable-access.sh README.md
+./tls-enable-access.sh
+# check connection over tls
+docker --tlsverify --tlscacert=docker-ca.pem --tlscert=docker-cert.pem --tlskey=docker-key.pem \
+  -H=$(hostname):2376 version
+```
+
 ```bash tls-enable-access.sh
 #!/bin/bash
 set -o errexit -o posix
