@@ -2,20 +2,24 @@
     "cSpell.words": [
         "Acreateserial",
         "Akey",
+        "bin",
         "chmod",
         "dockerd",
         "dockerx",
         "errexit",
+        "exec",
         "extfile",
         "genrsa",
         "passin",
         "passout",
         "posix",
         "printf",
+        "start",
         "systemctl",
         "tlscacert",
         "tlscert",
         "tlskey",
-        "tlsverify"
+        "tlsverify",
+        "usr"
     ]
 }

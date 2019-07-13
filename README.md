@@ -74,10 +74,16 @@ if [ $? -ne 0 ]
 ```bash tls-enable-access.sh
 #!/bin/bash
 set -o errexit -o posix
+
+# for security purpose delete files
+rm -rf docker-client.csr docker-server.csr docker-extfile.cnf docker-extfile-client.cnf
+
+rm -rf docker-ca-key.pem docker-key.pem docker-server-key.pem docker-ca.pem docker-server-cert.pem docker-cert.pem
+
 # create passphrase text file
 echo "topSecret" >passphrase.txt
 # create generate CA private
-openssl genrsa -aes256 -passout  -out docker-ca-key.pem 4096
+openssl genrsa -aes256 -passout file:passphrase.txt -out docker-ca-key.pem 4096
 # remove key
 # from https://www.jamescoyle.net/how-to/1073-bash-script-to-create-an-ssl-certificate-key-and-request-csr
 openssl rsa -in docker-ca-key.pem -passin file:passphrase.txt -out docker-ca-key.pem
@@ -89,53 +95,58 @@ openssl genrsa -out docker-server-key.pem 4096
 # sign the server key
 openssl req -subj "/CN=$HOST" -sha256 -new -key docker-server-key.pem -out docker-server.csr
 # prepare file
-ip="$(ip route get 1 | sed 's/^.*src \([^ ]*\).*$/\1/;q')";
-echo subjectAltName = DNS:$HOST,IP:${ip},IP:127.0.0.1 >> docker-extfile.cnf
-echo extendedKeyUsage = serverAuth >> docker-extfile.cnf
+IP="$(ip route get 1 | sed 's/^.*src \([^ ]*\).*$/\1/;q')";
+echo "used IP ${IP}";
+echo "subjectAltName = DNS:$(hostname),IP:${IP},IP:127.0.0.1" > docker-extfile.cnf
+echo "extendedKeyUsage = serverAuth" >> docker-extfile.cnf
 # create cert
-openssl x509 -req -days 365 -sha256 -in server.csr -CA ca.pem -CAkey docker-ca-key.pem \
+openssl x509 -req -days 365 -sha256 -in docker-server.csr -CA docker-ca.pem -CAkey docker-ca-key.pem \
 -CAcreateserial -out docker-server-cert.pem -extfile docker-extfile.cnf
 # create client key
 openssl genrsa -out docker-key.pem 4096
 # create XXX
 openssl req -subj '/CN=client' -new -key docker-key.pem -out docker-client.csr
 # write extfile-client.cnf
-echo extendedKeyUsage = clientAuth > docker-extfile-client.cnf
+echo "extendedKeyUsage = clientAuth" > docker-extfile-client.cnf
 # generate CA Private Key
 openssl x509 -req -days 365 -sha256 -in docker-client.csr -CA docker-ca.pem -CAkey docker-ca-key.pem \
 -CAcreateserial -out docker-cert.pem -extfile docker-extfile-client.cnf
 # for security purpose delete files
-rm -v docker-client.csr docker-server.csr docker-extfile.cnf docker-extfile-client.cnf
+rm -rf docker-client.csr docker-server.csr docker-extfile.cnf docker-extfile-client.cnf
 # set permissions
-chmod -v 0400 docker-ca-key.pem docker-key.pem docker-server-key.pem
-chmod -v 0444 docker-ca.pem docker-server-cert.pem docker-cert.pem
+chmod --verbose 0400 docker-ca-key.pem docker-key.pem docker-server-key.pem
+chmod --verbose 0444 docker-ca.pem docker-server-cert.pem docker-cert.pem
 # copy to /etc/ssl
-cp -v docker-ca-key.pem docker-key.pem docker-server-key.pem docker-ca.pem docker-server-cert.pem docker-cert.pem /etc/ssl
-# server side
-dockerd --tlsverify --tlscacert=/etc/ssl/docker-ca.pem --tlscert=/etc/ssl/docker-server-cert.pem --tlskey=/etc/ssl/docker-server-key.pem -H=0.0.0.0:2376
+sudo cp --verbose docker-ca-key.pem docker-key.pem docker-server-key.pem docker-ca.pem docker-server-cert.pem docker-cert.pem /etc/ssl
+# config server side
+# TODO old dockerd --tlsverify --tlscacert=/etc/ssl/docker-ca.pem --tlscert=/etc/ssl/docker-server-cert.pem --tlskey=/etc/ssl/docker-server-key.pem -H=0.0.0.0:2376
 # modify config
 # service
 SERVICE="docker.service";
 # determine service file
+# ERROR TODO if service not running no service file
 SERVICE_FILE="$(systemctl show -p FragmentPath ${SERVICE}|sed 's/.*=//')";
 # create backup
 sudo cp "${SERVICE_FILE}" "${SERVICE_FILE}.backup"
 # delete all comment ExecStart line from previous config loop
-sudo sed -i '/^#ExecStart.*$/ d' "${SERVICE_FILE}"
+sudo sed -i '/^#ExecStart.*$/d' "${SERVICE_FILE}"
 # comment available ExecStart (all match)
 sudo sed -i '/^ExecStart/ s/^#*/#/g' "${SERVICE_FILE}"
 # add remote network setting
-sudo sed -i '/^#ExecStart/a --tlsverify --tlscacert=/etc/ssl/docker-ca.pem --tlscert=/etc/ssl/docker-server-cert.pem --tlskey=/etc/ssl/docker-server-key.pem -H=0.0.0.0:2376' "${SERVICE_FILE}"
+sudo sed -i '/^#ExecStart/a ExecStart=/usr/bin/dockerd --tlsverify --tlscacert=/etc/ssl/docker-ca.pem --tlscert=/etc/ssl/docker-server-cert.pem --tlskey=/etc/ssl/docker-server-key.pem -H=0.0.0.0:2376 -H fd://' "${SERVICE_FILE}"
 # TODO old sudo sed -i '/^#ExecStart/a ExecStart=/usr/bin/dockerd -H fd:// -H 0.0.0.0:2376' "${SERVICE_FILE}"
 # Reload the unit files
 sudo systemctl daemon-reload
 # restart
 sudo systemctl restart docker.service
 
+```
+
+```bash tls-test-connect.sh
 
 # test from client side
-docker --tlsverify --tlscacert=ca.pem --tlscert=cert.pem --tlskey=key.pem \
-  -H=$HOST:2376 version
+docker --tlsverify --tlscacert=docker-ca.pem --tlscert=docker-cert.pem --tlskey=docker-key.pem \
+  -H=$(hostname):2376 version
 
 
 
