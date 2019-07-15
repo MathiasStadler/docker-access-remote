@@ -10,7 +10,7 @@ cat << EOF |tee ${SCRIPT_NAME}
 set -o posix -o errexit
 if [ -z \${1+x} ]; then printf "set script name that you would extract \n "; exit 1;fi
 if [ -z \${2+x} ]; then printf "set source markdown file\n" ;exit 1; fi
-if grep -q "\$1" "\$2"; then printf "" ; else printf "NOT exists\n"; exit 1 ; fi ;
+if grep -q "\$1" "\$2"; then printf "" ; else printf "ERROR: script tag \$1 NOT exists in \$2\n"; exit 1; fi;
 unset SCRIPT
 unset SCRIPT_PATH
 SCRIPT=\$1;
@@ -18,7 +18,7 @@ SCRIPT_PATH="work_folder/\${SCRIPT}"
 # printf "SCRIPT => %s \n" "\${SCRIPT}"
 expr="/^\\\`\\\`\\\`bash \${SCRIPT}/,/^\\\`\\\`\\\`/{ /^\\\`\\\`\\\`bash.*$/d; /^\\\`\\\`\\\`$/d; p; }"
 # printf "Expression %s \n" "\${expr}"
-if [ -f "\${1}" ]; then printf "File exists please delete first \n";exit 1;fi;
+if [ -f "\${1}" ]; then printf "File \${1} exists please delete first \n";exit 1;fi;
 sed -n "\${expr}" "\${2}" >"\${1}"
 chmod +x "\${1}"
 EOF
@@ -161,7 +161,8 @@ sudo sed -i '/^#ExecStart.*$/d' "${SERVICE_FILE}"
 # comment available ExecStart (all match)
 sudo sed -i '/^ExecStart/ s/^#*/#/g' "${SERVICE_FILE}"
 # add remote network setting
-sudo sed -i '/^#ExecStart/a ExecStart=/usr/bin/dockerd --tlsverify --tlscacert=/etc/ssl/docker-ca.pem --tlscert=/etc/ssl/docker-server-cert.pem --tlskey=/etc/ssl/docker-server-key.pem -H=0.0.0.0:2376 -H fd://' "${SERVICE_FILE}"
+# sudo sed -i '/^#ExecStart/a ExecStart=/usr/bin/dockerd --tlsverify --tlscacert=/etc/ssl/docker-ca.pem --tlscert=/etc/ssl/docker-server-cert.pem --tlskey=/etc/ssl/docker-server-key.pem -H=0.0.0.0:2376 -H fd://' "${SERVICE_FILE}"
+sudo sed -i '/^#ExecStart/a ExecStart=/usr/bin/dockerd --tlsverify --tlscacert=/etc/ssl/docker-ca.pem --tlscert=/etc/ssl/docker-server-cert.pem --tlskey=/etc/ssl/docker-server-key.pem -H=0.0.0.0:2376' "${SERVICE_FILE}"
 # TODO old sudo sed -i '/^#ExecStart/a ExecStart=/usr/bin/dockerd -H fd:// -H 0.0.0.0:2376' "${SERVICE_FILE}"
 # Reload the unit files
 sudo systemctl daemon-reload
@@ -180,4 +181,28 @@ docker --tlsverify --tlscacert=docker-ca.pem --tlscert=docker-cert.pem --tlskey=
 
 # DON'T FORGET THE FIREWALL  
 
+```
+
+## enable global tls login
+
+```bash tls-enable-system-wide-login.sh
+#!/bin/bash
+set -o errexit -o posix
+
+DOCKER_FOLDER="${HOME}/.docker"
+
+if [ -f "${DOCKER_FOLDER}" ]; then
+printf "docker key folder available\nPlease check and delete by hand!";
+exit 1;
+else
+mkdir -pv "${DOCKER_FOLDER}"
+#cp -v {ca,cert,key}.pem ~/.docker
+cp docker-ca.pem "${DOCKER_FOLDER}/ca.pem"
+cp docker-cert.pem "${DOCKER_FOLDER}/cert.pem"
+cp docker-key.pem "${DOCKER_FOLDER}/key.pem"
+fi
+~/.docker
+export DOCKER_HOST="tcp://$(hostname):2376"
+export DOCKER_TLS_VERIFY=1
+docker ps
 ```

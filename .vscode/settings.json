@@ -10,6 +10,7 @@
         "exec",
         "extfile",
         "genrsa",
+        "mkdir",
         "passin",
         "passout",
         "posix",
