@@ -192,9 +192,9 @@ set -o errexit -o posix -o nounset -o pipefail
 # set docker folder
 DOCKER_FOLDER="${HOME}/.docker"
 # no overwrite exists keys
-if [ -f "${DOCKER_FOLDER}" ]; then
-printf "docker key folder available\nPlease check and delete by hand!";
-exit 1;
+if [ -x "${DOCKER_FOLDER}" ]; then
+printf "docker key folder available\n"
+printf "Please check and delete by hand!\n";
 else
 # create folder
 mkdir -pv "${DOCKER_FOLDER}"
@@ -202,11 +202,11 @@ mkdir -pv "${DOCKER_FOLDER}"
 cp docker-ca.pem "${DOCKER_FOLDER}/ca.pem"
 cp docker-cert.pem "${DOCKER_FOLDER}/cert.pem"
 cp docker-key.pem "${DOCKER_FOLDER}/key.pem"
-fi
 # for test purpose
 # export variables
 export DOCKER_HOST="tcp://$(hostname):2376"
 export DOCKER_TLS_VERIFY=1
 # execute docker command
 docker info
+fi
 ```
