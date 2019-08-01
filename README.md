@@ -101,13 +101,10 @@ docker --tlsverify --tlscacert=docker-ca.pem --tlscert=docker-cert.pem --tlskey=
 
 ```bash tls-enable-access.sh
 #!/bin/bash
-set -o errexit -o posix
-
+set -o errexit -o posix -o nounset -o pipefail
 # for security purpose delete files
 rm -rf docker-client.csr docker-server.csr docker-extfile.cnf docker-extfile-client.cnf
-
 rm -rf docker-ca-key.pem docker-key.pem docker-server-key.pem docker-ca.pem docker-server-cert.pem docker-cert.pem
-
 # create passphrase text file
 echo "topSecret" >passphrase.txt
 # create generate CA private
@@ -147,7 +144,6 @@ chmod --verbose 0444 docker-ca.pem docker-server-cert.pem docker-cert.pem
 # copy to /etc/ssl
 sudo cp --verbose docker-ca-key.pem docker-key.pem docker-server-key.pem docker-ca.pem docker-server-cert.pem docker-cert.pem /etc/ssl
 # config server side
-# TODO old dockerd --tlsverify --tlscacert=/etc/ssl/docker-ca.pem --tlscert=/etc/ssl/docker-server-cert.pem --tlskey=/etc/ssl/docker-server-key.pem -H=0.0.0.0:2376
 # modify config
 # service
 SERVICE="docker.service";
@@ -156,19 +152,16 @@ SERVICE="docker.service";
 SERVICE_FILE="$(systemctl show -p FragmentPath ${SERVICE}|sed 's/.*=//')";
 # create backup
 sudo cp "${SERVICE_FILE}" "${SERVICE_FILE}.backup"
-# delete all comment ExecStart line from previous config loop
+# delete all old comment ExecStart line from previous config loop
 sudo sed -i '/^#ExecStart.*$/d' "${SERVICE_FILE}"
 # comment available ExecStart (all match)
 sudo sed -i '/^ExecStart/ s/^#*/#/g' "${SERVICE_FILE}"
 # add remote network setting
-# sudo sed -i '/^#ExecStart/a ExecStart=/usr/bin/dockerd --tlsverify --tlscacert=/etc/ssl/docker-ca.pem --tlscert=/etc/ssl/docker-server-cert.pem --tlskey=/etc/ssl/docker-server-key.pem -H=0.0.0.0:2376 -H fd://' "${SERVICE_FILE}"
 sudo sed -i '/^#ExecStart/a ExecStart=/usr/bin/dockerd --tlsverify --tlscacert=/etc/ssl/docker-ca.pem --tlscert=/etc/ssl/docker-server-cert.pem --tlskey=/etc/ssl/docker-server-key.pem -H=0.0.0.0:2376' "${SERVICE_FILE}"
-# TODO old sudo sed -i '/^#ExecStart/a ExecStart=/usr/bin/dockerd -H fd:// -H 0.0.0.0:2376' "${SERVICE_FILE}"
 # Reload the unit files
 sudo systemctl daemon-reload
 # restart
 sudo systemctl restart docker.service
-
 ```
 
 ```bash tls-test-connect.sh
@@ -195,22 +188,25 @@ rm -rf tls-enable-system-wide-login.sh
 
 ```bash tls-enable-system-wide-login.sh
 #!/bin/bash
-set -o errexit -o posix
-
+set -o errexit -o posix -o nounset -o pipefail
+# set docker folder
 DOCKER_FOLDER="${HOME}/.docker"
-
+# no overwrite exists keys
 if [ -f "${DOCKER_FOLDER}" ]; then
 printf "docker key folder available\nPlease check and delete by hand!";
 exit 1;
 else
+# create folder
 mkdir -pv "${DOCKER_FOLDER}"
-#cp -v {ca,cert,key}.pem ~/.docker
+# copy pem
 cp docker-ca.pem "${DOCKER_FOLDER}/ca.pem"
 cp docker-cert.pem "${DOCKER_FOLDER}/cert.pem"
 cp docker-key.pem "${DOCKER_FOLDER}/key.pem"
 fi
-~/.docker
+# for test purpose
+# export variables
 export DOCKER_HOST="tcp://$(hostname):2376"
 export DOCKER_TLS_VERIFY=1
-docker ps
+# execute docker command
+docker info
 ```
