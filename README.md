@@ -179,11 +179,19 @@ docker --tlsverify --tlscacert=docker-ca.pem --tlscert=docker-cert.pem --tlskey=
 
 
 
-# DON'T FORGET THE FIREWALL  
+# DON'T FORGET THE FIREWALL
 
 ```
 
 ## enable global tls login
+
+```bash
+# create script
+rm -rf tls-enable-system-wide-login.sh
+./readme2script.sh tls-enable-system-wide-login.sh README.md
+./tls-enable-system-wide-login.sh
+```
+
 
 ```bash tls-enable-system-wide-login.sh
 #!/bin/bash
