@@ -118,7 +118,7 @@ openssl req -new -x509 -days 30 -key docker-ca-key.pem -sha256 -out docker-ca.pe
 # create server key
 openssl genrsa -out docker-server-key.pem 4096
 # sign the server key
-openssl req -subj "/CN=$HOST" -sha256 -new -key docker-server-key.pem -out docker-server.csr
+openssl req -subj "/CN=${HOST:-}" -sha256 -new -key docker-server-key.pem -out docker-server.csr
 # prepare file
 IP="$(ip route get 1 | sed 's/^.*src \([^ ]*\).*$/\1/;q')";
 echo "used IP ${IP}";
@@ -207,6 +207,11 @@ cp docker-key.pem "${DOCKER_FOLDER}/key.pem"
 export DOCKER_HOST="tcp://$(hostname):2376"
 export DOCKER_TLS_VERIFY=1
 # execute docker command
-docker info
+docker info || (printf "ERROR :: Docker not reached\n"; exit 1;);
+# hint for set environment variable
+printf "For access to docker import by hand \n"
+printf "export DOCKER_HOST=\"tcp://%s:2376\"\n" "$(hostname)";
+printf "export DOCKER_TLS_VERIFY=1\n"
+printf "Successful Finished !!!"
 fi
 ```
