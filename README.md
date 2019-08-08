@@ -91,12 +91,16 @@ if [ $? -ne 0 ]
 
 ```bash
 # create script
-rm -rf tls-enable-access.sh
-./readme2script.sh tls-enable-access.sh README.md
+rm -rf *.csr *.cnf *.pem && \
+rm -rf tls-enable-access.sh && \
+./readme2script.sh tls-enable-access.sh README.md && \
 ./tls-enable-access.sh
 # check connection over tls
 docker --tlsverify --tlscacert=docker-ca.pem --tlscert=docker-cert.pem --tlskey=docker-key.pem \
   -H=$(hostname):2376 version
+# check self signed certificate
+  openssl verify -trusted docker-ca.pem 
+-check_ss_sig docker-cert.pem
 ```
 
 ```bash tls-enable-access.sh
@@ -180,8 +184,8 @@ docker --tlsverify --tlscacert=docker-ca.pem --tlscert=docker-cert.pem --tlskey=
 
 ```bash
 # create script
-rm -rf tls-enable-system-wide-login.sh
-./readme2script.sh tls-enable-system-wide-login.sh README.md
+rm -rf tls-enable-system-wide-login.sh && \
+./readme2script.sh tls-enable-system-wide-login.sh README.md && \
 ./tls-enable-system-wide-login.sh
 ```
 
@@ -212,6 +216,6 @@ docker info || (printf "ERROR :: Docker not reached\n"; exit 1;);
 printf "For access to docker import by hand \n"
 printf "export DOCKER_HOST=\"tcp://%s:2376\"\n" "$(hostname)";
 printf "export DOCKER_TLS_VERIFY=1\n"
-printf "Successful Finished !!!"
+printf "Successful Finished !!!\n"
 fi
 ```
