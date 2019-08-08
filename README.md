@@ -137,7 +137,7 @@ echo "extendedKeyUsage = clientAuth" > docker-extfile-client.cnf
 openssl x509 -req -days 365 -sha256 -in docker-client.csr -CA docker-ca.pem -CAkey docker-ca-key.pem \
 -CAcreateserial -out docker-cert.pem -extfile docker-extfile-client.cnf
 # for security purpose delete files
-rm -rf docker-client.csr docker-server.csr docker-extfile.cnf docker-extfile-client.cnf
+# TODO uncomment rm -rf docker-client.csr docker-server.csr docker-extfile.cnf docker-extfile-client.cnf
 # set permissions
 chmod --verbose 0400 docker-ca-key.pem docker-key.pem docker-server-key.pem
 chmod --verbose 0444 docker-ca.pem docker-server-cert.pem docker-cert.pem
