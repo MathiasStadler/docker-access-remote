@@ -122,7 +122,7 @@ openssl req -subj "/CN=${HOST:-}" -sha256 -new -key docker-server-key.pem -out d
 # prepare file
 IP="$(ip route get 1 | sed 's/^.*src \([^ ]*\).*$/\1/;q')";
 echo "used IP ${IP}";
-echo "subjectAltName = DNS:$(hostname),IP:${IP},IP:127.0.0.1" > docker-extfile.cnf
+echo "subjectAltName=critical,DNS:$(hostname),IP:${IP},IP:127.0.0.1" > docker-extfile.cnf
 echo "extendedKeyUsage = serverAuth" >> docker-extfile.cnf
 # create cert
 openssl x509 -req -days 365 -sha256 -in docker-server.csr -CA docker-ca.pem -CAkey docker-ca-key.pem \
