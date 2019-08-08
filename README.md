@@ -27,7 +27,11 @@ chmod +x ${SCRIPT_NAME}
 
 ## enable remote access
 
-- from https://success.docker.com/article/how-do-i-enable-the-remote-api-for-dockerd
+- from
+
+```txt
+https://success.docker.com/article/how-do-i-enable-the-remote-api-for-dockerd
+```
 
 - create script
 
@@ -85,7 +89,11 @@ if [ $? -ne 0 ]
 
 ## tls remote access to docker daemon
 
-- from https://docs.docker.com/engine/security/https/
+- from
+
+```txt
+https://docs.docker.com/engine/security/https/
+```
 
 - create script
 
@@ -99,8 +107,7 @@ rm -rf tls-enable-access.sh && \
 docker --tlsverify --tlscacert=docker-ca.pem --tlscert=docker-cert.pem --tlskey=docker-key.pem \
   -H=$(hostname):2376 version
 # check self signed certificate
-  openssl verify -trusted docker-ca.pem 
--check_ss_sig docker-cert.pem
+openssl verify -trusted docker-ca.pem -check_ss_sig docker-cert.pem
 ```
 
 ```bash tls-enable-access.sh
@@ -188,7 +195,6 @@ rm -rf tls-enable-system-wide-login.sh && \
 ./readme2script.sh tls-enable-system-wide-login.sh README.md && \
 ./tls-enable-system-wide-login.sh
 ```
-
 
 ```bash tls-enable-system-wide-login.sh
 #!/bin/bash
